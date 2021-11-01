@@ -23,9 +23,9 @@ struct arp_message{
 	uint8_t tpa[4]; //target protocol addr.
 };
 
-void get_hwaddr(char *dest ,char *iface){
+void get_hwaddr(uint8_t *dest ,char *iface){
 	struct ifreq ifr;
-	unsigned char mac_addr[6];
+	uint8_t mac_addr[6];
 
 	int sock=socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
 
@@ -34,9 +34,9 @@ void get_hwaddr(char *dest ,char *iface){
 	ioctl(sock, SIOCGIFHWADDR, &ifr);
 	close(sock);
 	for(int i=0;i<6;i++){
-		mac_addr[i]=(unsigned char)ifr.ifr_hwaddr.sa_data[i];
+		mac_addr[i]=(uint8_t)ifr.ifr_hwaddr.sa_data[i];
 	}
-	strncpy(dest, mac_addr, 6);
+	memcpy(dest, mac_addr, 6);
 }
 
 int send_arp(int sock, char *iface){
@@ -44,14 +44,14 @@ int send_arp(int sock, char *iface){
 	struct arp_message arp_message_buf;
 	struct sockaddr_in server_addr;
 
-	get_hwaddr(&mac_addr, "enp2s0");
-
 	arp_message_buf.hrd=1;
 	arp_message_buf.pro=0x0800;
 	arp_message_buf.hln=6;
 	arp_message_buf.pln=4;
 	arp_message_buf.op=1;
-	
+	get_hwaddr(&mac_addr, "enp2s0");
+	memcpy(arp_message_buf.sha, mac_addr, 6);
+
 	server_addr.sin_family=AF_INET;
 	//server_addr.sin_addr.s_addr=;
 
