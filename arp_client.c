@@ -43,6 +43,7 @@ int send_arp(int sock, char *iface){
 	unsigned char mac_addr[6];
 	struct arp_message arp_message_buf;
 	struct sockaddr_in server_addr;
+	uint8_t ip_addr[4]={192, 168, 11, 98};
 
 	arp_message_buf.hrd=1;
 	arp_message_buf.pro=0x0800;
@@ -51,6 +52,7 @@ int send_arp(int sock, char *iface){
 	arp_message_buf.op=1;
 	get_hwaddr(&mac_addr, "enp2s0");
 	memcpy(arp_message_buf.sha, mac_addr, 6);
+	memcpy(arp_message_buf.spa, ip_addr, 4);
 
 	server_addr.sin_family=AF_INET;
 	//server_addr.sin_addr.s_addr=;
