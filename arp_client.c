@@ -23,7 +23,7 @@ struct arp_message{
 	uint8_t tpa[4]; //target protocol addr.
 };
 
-void get_hwaddr(char *dist ,char *iface){
+void get_hwaddr(char *dest ,char *iface){
 	struct ifreq ifr;
 	unsigned char mac_addr[6];
 
@@ -36,15 +36,15 @@ void get_hwaddr(char *dist ,char *iface){
 	for(int i=0;i<6;i++){
 		mac_addr[i]=(unsigned char)ifr.ifr_hwaddr.sa_data[i];
 	}
-	*dist=mac_addr;
+	strncpy(dest, mac_addr, 6);
 }
 
 int send_arp(int sock, char *iface){
-	unsigned char mac[6];
+	unsigned char mac_addr[6];
 	struct arp_message arp_message_buf;
 	struct sockaddr_in server_addr;
 
-	get_hwaddr(mac, "enp2s0");
+	get_hwaddr(&mac_addr, "enp2s0");
 
 	arp_message_buf.hrd=1;
 	arp_message_buf.pro=0x0800;
