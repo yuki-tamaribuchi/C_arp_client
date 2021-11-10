@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <net/if.h>
 #include <string.h>
+#include <unistd.h>
 
 struct arp_message{
 	uint16_t hrd; //hardware type
@@ -43,14 +44,14 @@ int send_arp(int sock, char *iface){
 	unsigned char sender_mac_addr[6], target_mac_addr[6]={0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 	struct arp_message arp_message_buf;
 	struct sockaddr_in server_addr;
-	uint8_t sender_ip_addr[4]={192, 168, 11, 98}, target_ip_addr[4]={192, 168, 11, 1};
+	uint8_t sender_ip_addr[4]={192, 168, 11, 14}, target_ip_addr[4]={192, 168, 11, 1};
 
 	arp_message_buf.hrd=1;
 	arp_message_buf.pro=0x0800;
 	arp_message_buf.hln=6;
 	arp_message_buf.pln=4;
 	arp_message_buf.op=1;
-	get_hwaddr(&sender_mac_addr, "enp2s0");
+	get_hwaddr(&sender_mac_addr, iface);
 	memcpy(arp_message_buf.sha, sender_mac_addr, 6);
 	memcpy(arp_message_buf.spa, sender_ip_addr, 4);
 	memcpy(arp_message_buf.tha, target_mac_addr, 6);
@@ -59,8 +60,11 @@ int send_arp(int sock, char *iface){
 	server_addr.sin_family=AF_INET;
 	server_addr.sin_addr.s_addr=INADDR_BROADCAST;
 
-	if(sendto(sock, &arp_message_buf, sizeof(arp_message_buf), 0, &server_addr, sizeof(struct sockaddr_in))<0){
-		perror("send error\n");
+	if(connect(sock, (const struct sockaddr_in *)&server_addr, sizeof(struct sockaddr_in))<0){
+		perror("connect failed");
+	}
+	if(write(sock, (const void *)&arp_message_buf, sizeof(struct arp_message))<0){
+		perror("write failed");
 	}
 	close(sock);
 
